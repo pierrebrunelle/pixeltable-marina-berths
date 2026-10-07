@@ -19,7 +19,7 @@ Run a small marina: **slips** keyed by a human-readable string id (`A-12`), **ve
 - **Multi-table layout and schema evolution** with `pxt schema update`
 - **Incremental computed columns** powered by plain Python UDFs (`@pxt.udf`)
 - **FastAPI serving**: one `FastAPIRouter` turns tables and `@pxt.query` functions into typed REST routes (insert, update, delete, compute and query) with OpenAPI docs
-- **Importable UDF module**: UDFs in `udfs.py`, tables in `models.py`, queries in `queries.py`, routes in `app.py` (Pixeltable resolves UDFs by module path)
+- **Importable UDF module**: UDFs live in `udfs.py`; tables, queries and routes live together in `app.py` (Pixeltable resolves UDFs by module path)
 - **`pixeltable.toml`** declares a local database and a **Pixeltable Cloud** database, so the same code deploys with `pxt db update`
 
 ## Reads and writes, four ways
@@ -38,13 +38,11 @@ Run a small marina: **slips** keyed by a human-readable string id (`A-12`), **ve
 
 | File | What it is |
 |------|------------|
-| `app.py` | The API: one `FastAPIRouter` wiring the tables and queries into REST routes |
+| `app.py` | The app: tables declared as Python classes, `@pxt.query` functions, and the `FastAPIRouter` routes |
 | `client_demo.py` | Quote, find a slip, book, extend and cancel a berth through the API |
-| `models.py` | Tables declared as Python classes: columns, computed columns, indexes |
 | `pixeltable.toml` | Project config: the local database plus a Pixeltable Cloud database (sizing, deploy excludes) |
-| `queries.py` | `@pxt.query` functions served as query routes |
 | `seed.py` | Seed slips, vessels (one with a binary note) and bookings |
-| `udfs.py` | Pixeltable UDFs (`@pxt.udf`) in their own importable module |
+| `udfs.py` | Pixeltable UDFs (`@pxt.udf`) in their own importable module, imported by `app.py` |
 | `requirements.txt` / `pyproject.toml` | Dependencies (`pixeltable[serve]>=0.7.14`) |
 
 **Tables**
@@ -123,10 +121,10 @@ def berth_fee(loa_m: float, nights: int) -> float:
     return round(fee * (0.85 if nights >= 7 else 1.0), 2)
 ```
 
-**2. Tables are Python classes (`models.py`).** Annotated attributes are stored columns; attributes assigned an expression are **computed columns** (`id`, `fee`, `band`), evaluated incrementally on every insert or update and recomputed when their inputs change.
+**2. Tables are Python classes (`app.py`).** Annotated attributes are stored columns; attributes assigned an expression are **computed columns** (`id`, `fee`, `band`), evaluated incrementally on every insert or update and recomputed when their inputs change.
 
 ```python
-# models.py
+# app.py
 class Bookings(TableModel, name='bookings'):
     id = pxt.Column(value=pxtf.uuid.uuid7(), primary_key=True)
     slip_id: pxt.String
@@ -138,10 +136,10 @@ class Bookings(TableModel, name='bookings'):
     band = stay_band(nights)
 ```
 
-**3. Queries are functions (`queries.py`).** `@pxt.query` wraps a Pixeltable query so it can be called from Python or exposed as a route:
+**3. Queries are functions (`app.py`).** `@pxt.query` wraps a Pixeltable query so it can be called from Python or exposed as a route:
 
 ```python
-# queries.py
+# app.py
 @pxt.query
 def slips_that_fit(loa_m: float):
     """Slips long enough for a vessel, tightest fit first."""
