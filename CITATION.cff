@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use or adapt this example app, please cite it using these metadata."
+type: software
+title: "Marina Berth Booking API built with Pixeltable"
+abstract: "Marina berth booking API: string primary keys, binary columns, berth fees and stay bands as computed columns."
+authors:
+  - given-names: "Pierre"
+    family-names: "Brunelle"
+repository-code: "https://github.com/pierrebrunelle/pixeltable-marina-berths"
+url: "https://pierrebrunelle.github.io/awesome-pixeltable-apps/"
+license: Apache-2.0
+version: "0.1.0"
+date-released: 2026-10-07
+keywords:
+  - "pixeltable"
+  - "pixeltable-example"
+  - "python"
+  - "database"
+  - "marina"
+  - "reservations"
+  - "configuration"
+  - "data-pipeline"
+  - "fastapi"
+  - "multimodal"
